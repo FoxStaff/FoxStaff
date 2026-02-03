@@ -1,5 +1,5 @@
 #  About Me:
- I’m currently working on an Ai assistant called Buddy<br>🌱 I’m currently learning JavaScript
+ I’m currently working on an Ai assistant called Buddy<br> I’m currently learning JavaScript
 
 
 ## 🌐 Socials:
