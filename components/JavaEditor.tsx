@@ -11,13 +11,18 @@ const CodeMirror = dynamic(() => import("@uiw/react-codemirror"), { ssr: false }
 interface Props {
   initialCode: string;
   expectedOutput?: string;
+  fuzzy?: boolean;
   hints?: string[];
   onSolve?: () => void;
 }
 
 type Status = "idle" | "running" | "success" | "error" | "wrong";
 
-export default function JavaEditor({ initialCode, expectedOutput, hints = [], onSolve }: Props) {
+function normalize(s: string): string {
+  return s.trim().replace(/\r\n/g, "\n").replace(/[,!.;]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+export default function JavaEditor({ initialCode, expectedOutput, fuzzy = false, hints = [], onSolve }: Props) {
   const [code, setCode] = useState(initialCode);
   const [result, setResult] = useState<{ stdout: string; stderr: string } | null>(null);
   const [status, setStatus] = useState<Status>("idle");
@@ -36,7 +41,8 @@ export default function JavaEditor({ initialCode, expectedOutput, hints = [], on
       } else if (expectedOutput) {
         const actual = res.stdout.trim().replace(/\r\n/g, "\n");
         const expected = expectedOutput.trim().replace(/\r\n/g, "\n");
-        if (actual === expected) {
+        const matches = fuzzy ? normalize(actual) === normalize(expected) : actual === expected;
+        if (matches) {
           setStatus("success");
           onSolve?.();
         } else {
@@ -49,21 +55,13 @@ export default function JavaEditor({ initialCode, expectedOutput, hints = [], on
       setResult({ stdout: "", stderr: e instanceof Error ? e.message : "Execution failed" });
       setStatus("error");
     }
-  }, [code, expectedOutput, onSolve]);
+  }, [code, expectedOutput, fuzzy, onSolve]);
 
   const handleReset = () => {
     setCode(initialCode);
     setResult(null);
     setStatus("idle");
   };
-
-  const statusBar = {
-    idle: null,
-    running: null,
-    success: { icon: CheckCircle2, text: "All tests passed!", color: "text-green-400 bg-green-400/10 border-green-400/20" },
-    wrong: { icon: XCircle, text: "Output doesn't match. Check your logic.", color: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20" },
-    error: { icon: XCircle, text: "Compilation or runtime error.", color: "text-red-400 bg-red-400/10 border-red-400/20" },
-  }[status];
 
   const isRunning = status === "running";
 
@@ -103,16 +101,47 @@ export default function JavaEditor({ initialCode, expectedOutput, hints = [], on
         <CodeMirrorWrapper code={code} onChange={setCode} />
       </div>
 
-      {/* Status banner */}
-      {statusBar && (
-        <div className={cn("flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium", statusBar.color)}>
-          <statusBar.icon className="h-4 w-4 shrink-0" />
-          {statusBar.text}
+      {/* Success banner */}
+      {status === "success" && (
+        <div className="flex items-center gap-2 rounded-xl border border-green-400/20 bg-green-400/10 px-4 py-3 text-sm font-medium text-green-400">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          All tests passed!
         </div>
       )}
 
-      {/* Output */}
-      {result && (
+      {/* Error banner */}
+      {status === "error" && result?.stderr && (
+        <div className="rounded-xl border border-red-400/20 bg-red-400/10">
+          <div className="flex items-center gap-2 border-b border-red-400/20 px-4 py-2 text-sm font-medium text-red-400">
+            <XCircle className="h-4 w-4 shrink-0" />
+            Compilation / runtime error
+          </div>
+          <pre className="overflow-x-auto px-4 py-3 text-xs text-red-300 font-mono whitespace-pre-wrap">{result.stderr}</pre>
+        </div>
+      )}
+
+      {/* Wrong output — show diff */}
+      {status === "wrong" && result && expectedOutput && (
+        <div className="rounded-xl border border-yellow-400/20 bg-yellow-400/5">
+          <div className="flex items-center gap-2 border-b border-yellow-400/20 px-4 py-2 text-sm font-medium text-yellow-400">
+            <XCircle className="h-4 w-4 shrink-0" />
+            Output doesn&apos;t match
+          </div>
+          <div className="grid grid-cols-1 divide-y divide-white/10 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+            <div className="px-4 py-3">
+              <div className="mb-1 text-xs font-medium text-gray-500">Expected</div>
+              <pre className="text-xs text-green-300 font-mono whitespace-pre-wrap">{expectedOutput.trim()}</pre>
+            </div>
+            <div className="px-4 py-3">
+              <div className="mb-1 text-xs font-medium text-gray-500">Your output</div>
+              <pre className="text-xs text-red-300 font-mono whitespace-pre-wrap">{result.stdout.trim() || "(no output)"}</pre>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Output (when no expected check) */}
+      {result && status !== "wrong" && status !== "error" && (
         <div className="rounded-xl border border-white/10 bg-gray-900">
           <div className="border-b border-white/10 px-4 py-2">
             <span className="text-xs font-medium text-gray-400">Output</span>

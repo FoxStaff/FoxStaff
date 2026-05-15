@@ -165,6 +165,7 @@ export default function LessonClient({ lesson }: { lesson: Lesson }) {
           <JavaEditor
             initialCode={lesson.starterCode}
             expectedOutput={lesson.expectedOutput}
+            fuzzy
             hints={lesson.hints}
             onSolve={() => setSolved(true)}
           />
