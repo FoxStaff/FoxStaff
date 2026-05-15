@@ -45,8 +45,8 @@ export default function JavaEditor({ initialCode, expectedOutput, hints = [], on
       } else {
         setStatus("idle");
       }
-    } catch {
-      setResult({ stdout: "", stderr: "Could not connect to execution service. Please try again.", code: null, signal: null });
+    } catch (e) {
+      setResult({ stdout: "", stderr: (e instanceof Error ? e.message : "Could not connect to execution service. Please try again."), code: null, signal: null });
       setStatus("error");
     }
   }, [code, expectedOutput, onSolve]);
