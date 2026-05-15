@@ -12,17 +12,23 @@ interface Props {
   initialCode: string;
   expectedOutput?: string;
   fuzzy?: boolean;
+  mustContain?: string[][];
   hints?: string[];
   onSolve?: () => void;
 }
 
-type Status = "idle" | "running" | "success" | "error" | "wrong";
+type Status = "idle" | "running" | "success" | "error" | "wrong" | "hardcoded";
 
 function normalize(s: string): string {
   return s.trim().replace(/\r\n/g, "\n").replace(/[,!.;]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
-export default function JavaEditor({ initialCode, expectedOutput, fuzzy = false, hints = [], onSolve }: Props) {
+function passesLogicCheck(code: string, mustContain: string[][]): boolean {
+  const lower = code.toLowerCase().replace(/\s+/g, " ");
+  return mustContain.every(group => group.some(pat => lower.includes(pat.toLowerCase())));
+}
+
+export default function JavaEditor({ initialCode, expectedOutput, fuzzy = false, mustContain, hints = [], onSolve }: Props) {
   const [code, setCode] = useState(initialCode);
   const [result, setResult] = useState<{ stdout: string; stderr: string } | null>(null);
   const [status, setStatus] = useState<Status>("idle");
@@ -43,8 +49,12 @@ export default function JavaEditor({ initialCode, expectedOutput, fuzzy = false,
         const expected = expectedOutput.trim().replace(/\r\n/g, "\n");
         const matches = fuzzy ? normalize(actual) === normalize(expected) : actual === expected;
         if (matches) {
-          setStatus("success");
-          onSolve?.();
+          if (mustContain && !passesLogicCheck(code, mustContain)) {
+            setStatus("hardcoded");
+          } else {
+            setStatus("success");
+            onSolve?.();
+          }
         } else {
           setStatus("wrong");
         }
@@ -55,7 +65,7 @@ export default function JavaEditor({ initialCode, expectedOutput, fuzzy = false,
       setResult({ stdout: "", stderr: e instanceof Error ? e.message : "Execution failed" });
       setStatus("error");
     }
-  }, [code, expectedOutput, fuzzy, onSolve]);
+  }, [code, expectedOutput, fuzzy, mustContain, onSolve]);
 
   const handleReset = () => {
     setCode(initialCode);
@@ -109,6 +119,19 @@ export default function JavaEditor({ initialCode, expectedOutput, fuzzy = false,
         </div>
       )}
 
+      {/* Hardcoded warning */}
+      {status === "hardcoded" && (
+        <div className="rounded-xl border border-orange-400/20 bg-orange-400/5 px-4 py-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-orange-400">
+            <XCircle className="h-4 w-4 shrink-0" />
+            Output is correct — but it looks hardcoded
+          </div>
+          <p className="mt-1 text-xs text-orange-300/70">
+            Your program prints the right answer, but it seems like you printed it directly instead of computing it. Try implementing the actual algorithm — that&apos;s where the learning happens!
+          </p>
+        </div>
+      )}
+
       {/* Error banner */}
       {status === "error" && result?.stderr && (
         <div className="rounded-xl border border-red-400/20 bg-red-400/10">
@@ -140,7 +163,7 @@ export default function JavaEditor({ initialCode, expectedOutput, fuzzy = false,
         </div>
       )}
 
-      {/* Output (when no expected check) */}
+      {/* Output (when no expected check or hardcoded) */}
       {result && status !== "wrong" && status !== "error" && (
         <div className="rounded-xl border border-white/10 bg-gray-900">
           <div className="border-b border-white/10 px-4 py-2">

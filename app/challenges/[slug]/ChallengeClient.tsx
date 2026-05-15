@@ -28,6 +28,7 @@ export default function ChallengeClient({ challenge }: { challenge: Challenge })
       <JavaEditor
         initialCode={challenge.starterCode}
         expectedOutput={challenge.testCases[0]?.expectedOutput}
+        mustContain={challenge.mustContain}
         hints={challenge.hints}
         onSolve={() => setSolved(true)}
       />

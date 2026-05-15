@@ -17,6 +17,9 @@ export interface Challenge {
   testCases: TestCase[];
   hints: string[];
   tags: string[];
+  // Each inner array is an OR group — code must match ≥1 item per group.
+  // All groups must pass (AND across groups). Used to detect hardcoded output.
+  mustContain?: string[][];
 }
 
 export const challenges: Challenge[] = [
@@ -57,6 +60,7 @@ export const challenges: Challenge[] = [
       "Use the % (modulo) operator: i % 3 == 0",
       "Use a for loop from 1 to 20 inclusive",
     ],
+    mustContain: [["for", "while"], ["%"]],
   },
   {
     slug: "palindrome",
@@ -103,6 +107,7 @@ export const challenges: Challenge[] = [
       "Compare original string with reversed using .equals()",
       "Or compare characters from both ends using a loop",
     ],
+    mustContain: [["charat", "equals", "reverse", "length", "tochararray"]],
   },
   {
     slug: "fibonacci",
@@ -141,6 +146,7 @@ export const challenges: Challenge[] = [
       "Each step: next = a + b, then a = b, b = next",
       "Use a loop that runs 10 times",
     ],
+    mustContain: [["for", "while"]],
   },
   {
     slug: "reverse-string",
@@ -190,6 +196,7 @@ export const challenges: Challenge[] = [
       "Use s.charAt(i) to get a character",
       "Build the result by appending characters",
     ],
+    mustContain: [["for", "while", "charat"]],
   },
   {
     slug: "count-vowels",
@@ -239,6 +246,7 @@ export const challenges: Challenge[] = [
       "Use s.toCharArray() to iterate characters",
       'Check if "aeiou".indexOf(c) != -1',
     ],
+    mustContain: [["for", "while"]],
   },
   {
     slug: "factorial",
@@ -285,6 +293,7 @@ export const challenges: Challenge[] = [
       "Recursive case: n * factorial(n-1)",
       "Use long instead of int to handle large numbers",
     ],
+    mustContain: [["factorial(n", "factorial(n-", "for", "while"]],
   },
   {
     slug: "binary-search",
@@ -339,6 +348,7 @@ export const challenges: Challenge[] = [
       "mid = left + (right - left) / 2 avoids overflow",
       "If arr[mid] < target, search right half; else search left",
     ],
+    mustContain: [["while", "for"], ["left", "right", "mid"]],
   },
   {
     slug: "anagram",
@@ -392,6 +402,7 @@ public class Main {
       "Use s.toCharArray() then Arrays.sort()",
       "Compare with Arrays.equals()",
     ],
+    mustContain: [["sort", "hashmap", "tochararray", "count"]],
   },
   {
     slug: "stack-impl",
@@ -466,6 +477,7 @@ public class Main {
       "push() adds to end, pop() removes from end",
       "peek() returns last element without removing",
     ],
+    mustContain: [["arraylist", "data", "list"], ["push", "pop"]],
   },
   {
     slug: "word-frequency",
@@ -515,6 +527,7 @@ public class Main {
       "freq.getOrDefault(word, 0) + 1 increments safely",
       "Sort the keys with Collections.sort()",
     ],
+    mustContain: [["hashmap", "map", "put"], ["for", "while"]],
   },
 ];
 
