@@ -12,10 +12,11 @@ export async function runJava(code: string): Promise<RunResult> {
     body: JSON.stringify({ code }),
   });
 
-  if (!res.ok) throw new Error("Execution service unavailable");
-
   const data = await res.json();
-  if (data.error) throw new Error(data.error);
+
+  if (!res.ok) {
+    throw new Error(data.error ?? "Execution service unavailable");
+  }
 
   return {
     stdout: data.stdout ?? "",

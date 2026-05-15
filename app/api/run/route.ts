@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = "edge";
+
 async function tryPiston(code: string) {
   const res = await fetch("https://emkc.org/api/v2/piston/execute", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": "JavaLearn/1.0",
-    },
+    headers: { "Content-Type": "application/json", "User-Agent": "JavaLearn/1.0" },
     body: JSON.stringify({
       language: "java",
       version: "*",
@@ -19,7 +18,7 @@ async function tryPiston(code: string) {
     signal: AbortSignal.timeout(12000),
   });
   if (!res.ok) throw new Error(`Piston ${res.status}`);
-  const data = await res.json();
+  const data = await res.json() as { message?: string; run?: { stdout: string; stderr: string }; compile?: { stderr: string } };
   if (data.message) throw new Error(data.message);
   return {
     stdout: data.run?.stdout ?? "",
@@ -36,40 +35,27 @@ async function tryCodex(code: string) {
     signal: AbortSignal.timeout(12000),
   });
   if (!res.ok) throw new Error(`Codex ${res.status}`);
-  const data = await res.json();
-  return {
-    stdout: data.output ?? "",
-    stderr: data.error ?? "",
-  };
+  const data = await res.json() as { output?: string; error?: string };
+  return { stdout: data.output ?? "", stderr: data.error ?? "" };
 }
 
 async function tryJDoodle(code: string) {
   const clientId = process.env.JDOODLE_CLIENT_ID;
   const clientSecret = process.env.JDOODLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) throw new Error("JDoodle not configured");
-
   const res = await fetch("https://api.jdoodle.com/v1/execute", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      clientId,
-      clientSecret,
-      script: code,
-      language: "java",
-      versionIndex: "4",
-    }),
+    body: JSON.stringify({ clientId, clientSecret, script: code, language: "java", versionIndex: "4" }),
     signal: AbortSignal.timeout(12000),
   });
   if (!res.ok) throw new Error(`JDoodle ${res.status}`);
-  const data = await res.json();
-  return {
-    stdout: data.output ?? "",
-    stderr: "",
-  };
+  const data = await res.json() as { output?: string };
+  return { stdout: data.output ?? "", stderr: "" };
 }
 
 export async function POST(req: NextRequest) {
-  const { code } = await req.json();
+  const { code } = await req.json() as { code: string };
   const errors: string[] = [];
 
   for (const [name, fn] of [
@@ -86,7 +72,7 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json(
-    { error: `All execution services failed. ${errors.join(" | ")}` },
+    { error: `Services unavailable — ${errors.join(" | ")}` },
     { status: 502 }
   );
 }
