@@ -20,7 +20,14 @@ interface Props {
 type Status = "idle" | "running" | "success" | "error" | "wrong" | "hardcoded";
 
 function normalize(s: string): string {
-  return s.trim().replace(/\r\n/g, "\n").replace(/[,!.;]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+  return s
+    .trim()
+    .replace(/\r\n/g, "\n")
+    .replace(/[,!.;]/g, "")          // strip punctuation
+    .replace(/\b\w+:\s*/g, "")       // strip label prefixes: "Error: ", "Result: ", "Name: ", etc.
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
 }
 
 function passesLogicCheck(code: string, mustContain: string[][]): boolean {
