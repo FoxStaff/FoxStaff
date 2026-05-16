@@ -166,6 +166,7 @@ export default function LessonClient({ lesson }: { lesson: Lesson }) {
             initialCode={lesson.starterCode}
             expectedOutput={lesson.expectedOutput}
             fuzzy
+            mustContain={lesson.mustContain}
             hints={lesson.hints}
             onSolve={() => setSolved(true)}
           />

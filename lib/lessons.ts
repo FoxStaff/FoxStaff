@@ -11,6 +11,7 @@ export interface Lesson {
   solutionCode: string;
   expectedOutput: string;
   hints: string[];
+  mustContain?: string[][];
 }
 
 export const lessons: Lesson[] = [
@@ -56,6 +57,7 @@ public class Main {
       "Use System.out.println() to print text",
       'Put your text in double quotes: "Hello, World!"',
     ],
+    mustContain: [["system.out.println"]],
   },
   {
     slug: "variables",
@@ -111,6 +113,7 @@ System.out.println("Age: " + age);
       "Declare int with: int age = 20;",
       'Use + to concatenate: "Name: " + name',
     ],
+    mustContain: [["string ", "int ", "double ", "float ", "char ", "long "], ["+"]],
   },
   {
     slug: "control-flow",
@@ -180,6 +183,7 @@ if (score >= 90) {
       "Chain conditions with else if",
       "The final else catches everything else",
     ],
+    mustContain: [["if"], ["else"]],
   },
   {
     slug: "loops",
@@ -242,6 +246,7 @@ for (int num : numbers) {
       'Print with: System.out.println("3 x " + i + " = " + (3 * i))',
       "Wrap the multiplication in parentheses: (3 * i)",
     ],
+    mustContain: [["for", "while"]],
   },
   {
     slug: "arrays",
@@ -310,6 +315,7 @@ System.out.println(Arrays.toString(scores));
       "Loop through each number",
       "Update max if num > max",
     ],
+    mustContain: [["for", "while"], ["if", ">", "<"]],
   },
   {
     slug: "methods",
@@ -389,6 +395,7 @@ public static double multiply(double a, double b) { return a * b; }
       "Loop from 2 to sqrt(n) and check if n % i == 0",
       "Use Math.sqrt(n) for efficiency",
     ],
+    mustContain: [["isprime", "boolean"], ["for", "while", "%"]],
   },
   {
     slug: "oop-basics",
@@ -480,6 +487,7 @@ public void setAge(int age) { this.age = age; }
       "Constructor: public Rectangle(double width, double height)",
       "area() returns width * height",
     ],
+    mustContain: [["class"], ["area"], ["*"]],
   },
   {
     slug: "inheritance",
@@ -593,6 +601,7 @@ a.speak(); // Whiskers says: Meow!
       "Call super(color) in the constructor",
       "@Override the area() method",
     ],
+    mustContain: [["extends"], ["super"]],
   },
   {
     slug: "collections",
@@ -677,6 +686,7 @@ public class Main {
       "After sorting, first element is min, last is max",
       "numbers.get(numbers.size() - 1) gives the last element",
     ],
+    mustContain: [["sort"], ["get", "size"]],
   },
   {
     slug: "exceptions",
@@ -767,6 +777,7 @@ public static void setAge(int age) throws AgeException {
       "Wrap the method call in try-catch",
       "catch (IllegalArgumentException e) catches the specific error",
     ],
+    mustContain: [["try"], ["catch"], ["throw"]],
   },
 ];
 
