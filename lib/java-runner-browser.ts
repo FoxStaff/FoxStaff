@@ -632,8 +632,12 @@ function splitStatements(s: string): string[] {
 
     if (ch === "}" && depth === 0) {
       cur += ch;
-      stmts.push(cur.trim());
-      cur = "";
+      // Don't split here if catch/finally follows — keep try-catch as one statement
+      const ahead = s.slice(i + 1).trimStart();
+      if (!ahead.startsWith("catch") && !ahead.startsWith("finally")) {
+        stmts.push(cur.trim());
+        cur = "";
+      }
       i++;
       continue;
     }
